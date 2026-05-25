@@ -109,15 +109,40 @@ int main()
     HPR hpr;
     HPR::PedalsDevice pedalsDevice = HPR::PedalsDevice::None;
 
-    pedalsDevice = hpr.Initialize(true, [](const std::string& info) {
-        std::cout << info << std::endl;
-        });
+    printf("Enumerating USB devices\n");
+    pedalsDevice = hpr.Initialize(true, [](const std::string& info) { printf("* %s\n", info.c_str()); });
 
     if (pedalsDevice == HPR::PedalsDevice::None)
-    {
-        std::cout << "No supported pedals found." << std::endl;
-        return 0;
+    {        
+        std::string lastInfo;
+        printf("Waiting for supported pedals to be connected...\n");
+
+        while (pedalsDevice == HPR::PedalsDevice::None)
+        {
+            Sleep(5000);
+            pedalsDevice = hpr.Initialize(true, [&lastInfo](const std::string& info) {
+                lastInfo = info;
+            });
+        }
+        printf("* %s\n", lastInfo.c_str());
     }
+
+#if defined(_DEBUG)        
+    printf("Testing brake vibration (1s, 20hz, 50%)\n");
+    hpr.VibratePedal(HPR::Channel::Brake, 20.0f, 50.0f);
+    Sleep(1000);
+    hpr.VibratePedal(HPR::Channel::Brake, 0, 0.0f);
+
+    printf("Testing clutch vibration (1s, 30hz, 50%) \n");
+    hpr.VibratePedal(HPR::Channel::Clutch, 30.0f, 50.0f);
+    Sleep(1000);
+    hpr.VibratePedal(HPR::Channel::Clutch, 0, 0.0f);
+
+    printf("Testing throttle vibration (1s, 40hz, 50%) \n");
+    hpr.VibratePedal(HPR::Channel::Throttle, 40.0f, 50.0f);
+    Sleep(1000);
+    hpr.VibratePedal(HPR::Channel::Throttle, 0, 0.0f);
+#endif
 
     printf("Waiting for iRacing connection...\n");
 
@@ -132,7 +157,7 @@ int main()
         {
             if(connected)
             {
-                printf("disconnected\n");
+                printf("iRacing disconnected\n");
                 connected = false;
             }
                 continue;
@@ -140,7 +165,7 @@ int main()
 
         if(!connected)
         {
-            printf("connected\n");
+            printf("iRacing connected\n");
             connected = true;
 
 #if defined(_DEBUG)        
