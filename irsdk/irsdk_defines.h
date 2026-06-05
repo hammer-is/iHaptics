@@ -387,9 +387,10 @@ struct irsdk_varHeader
 
 struct irsdk_varBuf
 {
-	int tickCount;		// used to detect changes in data
+	int tickCount;		// used to detect changes in data (updated AFTER write completes)
 	int bufOffset;		// offset from header
-	int pad[2];			// (16 byte align)
+	int tickCountBegin;	// updated BEFORE write starts (for torn read detection)
+	int pad[1];			// (16 byte align)
 };
 
 struct irsdk_header
@@ -410,11 +411,9 @@ struct irsdk_header
 
 	int numBuf;				// <= IRSDK_MAX_BUFS (3 for now)
 	int bufLen;				// length in bytes for one line
-	//****ToDo, add these in
-	//int curBufTickCount;	// stashed copy of the current tickCount, can read this to see if new data is available
-	//byte curBuf;			// index of the most recently written buffer (0 to IRSDK_MAX_BUFS-1)
-	//byte pad1[3];			// 16 byte align
-	int pad1[2];			// (16 byte align)
+	int curBufTickCount;	// stashed copy of the current tickCount, can read this to see if new data is available
+	unsigned char curBuf;	// index of the most recently written buffer (0 to IRSDK_MAX_BUFS-1)
+	char pad1[3];			// 16 byte align
 	irsdk_varBuf varBuf[IRSDK_MAX_BUFS]; // buffers of data being written to
 };
 

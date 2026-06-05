@@ -81,6 +81,11 @@ public:
 
 	// 1 success, 0 failure, -n minimum buffer size
 	int getSessionStrVal(const char *path, char *val, int valLen);
+
+	// if true, the session string is in UTF8 format, otherwise it is the old iso-8859-1 format
+	//****Note, this will return false if we are not yet connected to the sim
+	bool isSessionStrUTF8();
+
 	// get the whole string
 	const char *getSessionStr() { return m_sessionInfoString; }
 

@@ -70,6 +70,8 @@ irsdkMemServer::irsdkMemServer()
 	
 	localHeader.numBuf = irsdkMemServer::bufCount;
 	localHeader.bufLen = 0;
+	localHeader.curBufTickCount = -1;
+	localHeader.curBuf = 0;
 	localVarHeader[0].offset = 0;
 
 	//offset points to end of memory
@@ -91,6 +93,7 @@ irsdkMemServer::irsdkMemServer()
 	{
 		localHeader.varBuf[i].bufOffset = offset;
 		localHeader.varBuf[i].tickCount = -1;
+		localHeader.varBuf[i].tickCountBegin = -1;
 		offset += irsdkMemServer::bufLength;
 	}
 
@@ -398,6 +401,14 @@ bool irsdkMemServer::pollSampleVars()
 	{
 		char *pBase = pSharedMem + localHeader.varBuf[curBuf].bufOffset;
 
+		// Signal write is starting (for torn read detection)
+		// Reader checks: tickCount before memcpy, tickCountBegin after memcpy
+		// If they match, the read was not torn
+		localHeader.varBuf[curBuf].tickCountBegin = count;
+		pHeader->varBuf[curBuf].tickCountBegin = count;
+	
+		_WriteBarrier();
+
 		// for each entry
 		for(int index=0; index<localHeader.numVars; index++)
 		{
@@ -417,6 +428,12 @@ bool irsdkMemServer::pollSampleVars()
 		// update indexes
 		localHeader.varBuf[curBuf].tickCount = count;
 		pHeader->varBuf[curBuf].tickCount = count;
+
+		// Update header with current buffer info for quick client access
+		localHeader.curBufTickCount = count;
+		localHeader.curBuf = (unsigned char)curBuf;
+		pHeader->curBufTickCount = count;
+		pHeader->curBuf = (unsigned char)curBuf;
 
 		// flush caches to all processors
 		_WriteBarrier();

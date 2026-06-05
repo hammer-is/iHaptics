@@ -80,6 +80,10 @@ public:
 	//****Note, this is a linear parser, so it is slow!
 	int getSessionStrVal(const char *path, char *val, int valLen);
 
+	// if true, the session string is in UTF8 format, otherwise it is the old iso-8859-1 format
+	//****Note, this will return false if we are not yet connected to the sim
+	bool isSessionStrUTF8();
+
 	// get the whole string
 	const char *getSessionStr();
 

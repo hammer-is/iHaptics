@@ -383,6 +383,20 @@ int irsdkClient::getSessionStrVal(const char *path, char *val, int valLen)
 	return 0;
 }
 
+bool irsdkClient::isSessionStrUTF8()
+{
+	const int MAX_STR = 1024;
+	char tstr[MAX_STR];
+
+	if(getSessionStrVal("WeekendInfo:Encoding:", tstr, MAX_STR)) 
+	{
+		if(0 == strncmp(tstr, "UTF8", MAX_STR))
+			return true;
+	}
+
+	return false;
+}
+
 // get the whole string
 const char* irsdkClient::getSessionStr() 
 { 

@@ -88,6 +88,10 @@ void run()
 	// wait up to 16 ms for start of session or new data
 	if(irsdkClient::instance().waitForData(16))
 	{
+		//****Note, check this, then convert the string outputs to whatever encoding you need
+		bool isUTF8 = irsdkClient::instance().isSessionStrUTF8();
+		(void)isUTF8;
+
 		// and grab the data
 		const int MAX_STR = 1024;
 		char tstr[MAX_STR];
@@ -189,6 +193,10 @@ void processFile(const char *path)
 
 	if(idk.openFile(path))
 	{
+		//****Note, check this, then convert the string outputs to whatever encoding you need
+		bool isUTF8 = idk.isSessionStrUTF8();
+		(void)isUTF8;
+
 		// get info on the car path
 		if(1 == idk.getSessionStrVal("DriverInfo:DriverCarIdx:", tstr, MAX_STR))
 		{
